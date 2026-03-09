@@ -9,7 +9,12 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <switchboard/SwitchboardV3.hpp>
+#include <switchboard/Switchboard.hpp>
+#include <switchboard_core/ExtensionManager.hpp>
+#include <switchboard_core/Logger.hpp>
+#include <WhisperExtension.hpp>
+#include <OnnxExtension.hpp>
+#include <SileroVADExtension.hpp>
 
 using namespace switchboard;
 
@@ -51,45 +56,59 @@ Java_com_synervoz_switchboardandroiddemo_ui_examples_whisperstt_WhisperSTTExampl
     std::string jsonPath = std::string(nativeDataDirectoryPath) + "/" + std::string(nativeJson);
 
     auto engineJSON = readContentsOfTextFile(jsonPath);
-    Config sdkConfig({{"appID",     "demo"},
-                      {"appSecret", "demo"}});
-    SwitchboardV3::initialize(sdkConfig);
 
-    Result<SwitchboardV3::ObjectID> result = SwitchboardV3::createEngine(engineJSON.value());
+    extensions::whisper::WhisperExtension::load();
+    extensions::onnx::OnnxExtension::load();
+    extensions::silerovad::SileroVADExtension::load();
+
+    SBAnyMap extensionsConfig;
+    extensionsConfig["Whisper"] = SBAnyMap();
+    extensionsConfig["Onnx"] = SBAnyMap();
+    extensionsConfig["SileroVAD"] = SBAnyMap();
+
+    SBAnyMap sdkConfig = {{"appID",     "demo"},
+                        {"appSecret", "demo"},
+                        {"extensions", extensionsConfig}};
+
+    Switchboard::initialize(sdkConfig);
+
+    Result<Switchboard::ObjectID> result = Switchboard::createEngine(engineJSON.value());
     if (result.isError()) {
         env->ReleaseStringUTFChars(dataDirectoryPath, nativeDataDirectoryPath);
         env->ReleaseStringUTFChars(json, nativeJson);
         return;
     }
-    engineID = result.value().value();
+    engineID = result.value();
 
     std::string whisperModelPath = std::string(nativeDataDirectoryPath) +
             "/ggml-tiny.en.bin";
-    auto result1 = SwitchboardV3::callAction("sttNode", "loadModel",
+    auto result1 = Switchboard::callAction("sttNode", "loadModel",
                                                      {{ "modelPath", whisperModelPath }, { "useGPU", true }});
 
     std::string sileroModelPath = std::string(nativeDataDirectoryPath) +
                                    "/silero_vad.onnx";
-    auto result2 = SwitchboardV3::callAction("vadNode", "loadModel",
+    auto result2 = Switchboard::callAction("vadNode", "loadModel",
                                                      {{ "modelPath", sileroModelPath }});
 
-    SwitchboardV3::addEventListener("vadNode", "start", [](const std::any& data) {
+    Switchboard::addEventListener("vadNode", "speechStarted", [](const Event& event) {
         __android_log_print(ANDROID_LOG_INFO, "WhisperSTTExample", "vadNode start");
     });
-    SwitchboardV3::addEventListener("vadNode", "end", [](const std::any& data) {
+    Switchboard::addEventListener("vadNode", "speechEnded", [](const Event& event) {
         __android_log_print(ANDROID_LOG_INFO, "WhisperSTTExample", "vadNode end");
     });
 
     env->GetJavaVM(&jvm);
     javaObject = env->NewGlobalRef(instance);
     jclass javaClass = env->GetObjectClass(instance);
-    onTranscriptionUpdateMethodId = env->GetMethodID(javaClass, "onTranscriptionUpdate", "(Ljava/lang/String;)V");
+    onTranscriptionUpdateMethodId = env->GetMethodID(javaClass, "onTranscriptionUpdate", "(Ljava/lang/String;J)V");
 
-    SwitchboardV3::addEventListener("sttNode", "transcription", [](const std::any& data) {
-        __android_log_print(ANDROID_LOG_INFO, "WhisperSTTExample", "transcription");
-        const auto text = Config::toString(data);
+    Switchboard::addEventListener("sttNode", "transcribed", [](const Event& event) {
+        __android_log_print(ANDROID_LOG_INFO, "WhisperSTTExample", "transcribed");
+        const auto params = SBAny::convert<SBAnyMap>(event.data);
+        const auto text = SBAny::convert<std::string>(params.at("text"));
+        const auto processingTime = SBAny::convert<int>(params.at("processingTime"));
         JNIEnv* env = getThreadLocalEnv(jvm);
-        env->CallVoidMethod(javaObject, onTranscriptionUpdateMethodId, env->NewStringUTF(text.c_str()));
+        env->CallVoidMethod(javaObject, onTranscriptionUpdateMethodId, env->NewStringUTF(text.c_str()), static_cast<long>(processingTime));
     });
 
     env->ReleaseStringUTFChars(dataDirectoryPath, nativeDataDirectoryPath);
@@ -101,7 +120,7 @@ Java_com_synervoz_switchboardandroiddemo_ui_examples_whisperstt_WhisperSTTExampl
         JNIEnv *env,
         jobject instance) {
 
-    auto startEngineResult = SwitchboardV3::callAction(engineID, "start");
+    auto startEngineResult = Switchboard::callAction(engineID, "start");
     if (startEngineResult.isError()) {
         return false;
     }
@@ -112,7 +131,7 @@ extern "C" JNIEXPORT jboolean JNICALL
 Java_com_synervoz_switchboardandroiddemo_ui_examples_whisperstt_WhisperSTTExample_stopEngine(
         JNIEnv *env,
         jobject instance) {
-    auto stopEngineResult = SwitchboardV3::callAction(engineID, "stop");
+    auto stopEngineResult = Switchboard::callAction(engineID, "stop");
     if (stopEngineResult.isError()) {
         return true;
     }

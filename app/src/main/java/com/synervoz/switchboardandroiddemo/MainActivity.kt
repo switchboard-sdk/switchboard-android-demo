@@ -49,9 +49,9 @@ class MainActivity : AppCompatActivity() {
 
         // Please get your own  appID and appSecret from https://console.switchboard.audio/register
         SwitchboardSDK.initialize(this, "demo", "demo")
-        SileroVADExtension.initialize()
-        WhisperExtension.initialize()
-        SherpaExtension.initialize()
+        SileroVADExtension.load()
+        WhisperExtension.load()
+        SherpaExtension.load()
 
         AssetUtils.copyAssetDirectoryToInternal(this, "model", "")
         AssetUtils.copyAssetFileToInternal(this, "TTSExample.json", "TTSExample.json")

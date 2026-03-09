@@ -33,7 +33,7 @@ class WhisperSTTExample(context: Context) {
         isRunning = false
     }
 
-    fun onTranscriptionUpdate(text: String) {
-        onTranscriptionUpdate?.onTranscriptionUpdate(text, 0L)
+    fun onTranscriptionUpdate(text: String, processingTime: Long) {
+        onTranscriptionUpdate?.onTranscriptionUpdate(text, processingTime)
     }
 }

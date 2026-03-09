@@ -9,7 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <switchboard/SwitchboardV3.hpp>
+#include <switchboard/Switchboard.hpp>
 
 using namespace switchboard;
 
@@ -39,41 +39,37 @@ Java_com_synervoz_switchboardandroiddemo_ui_examples_whisperstttosherpatts_Whisp
     std::string jsonPath = std::string(nativeDataDirectoryPath) + "/" + std::string(nativeJson);
 
     auto engineJSON = readContentsOfTextFile(jsonPath);
-    Config sdkConfig({{"appID",     "demo"},
-                      {"appSecret", "demo"}});
-    SwitchboardV3::initialize(sdkConfig);
+    SBAnyMap sdkConfig({{"appID",     "demo"},
+                        {"appSecret", "demo"}});
+    Switchboard::initialize(sdkConfig);
 
-    Result<SwitchboardV3::ObjectID> result = SwitchboardV3::createEngine(engineJSON.value());
+    Result<Switchboard::ObjectID> result = Switchboard::createEngine(engineJSON.value());
     if (result.isError()) {
         env->ReleaseStringUTFChars(dataDirectoryPath, nativeDataDirectoryPath);
         env->ReleaseStringUTFChars(json, nativeJson);
         return;
     }
-    engineID = result.value().value();
+    engineID = result.value();
+
     std::string modelPath = std::string(nativeDataDirectoryPath) +
-            "/en_GB/vits-piper-en_GB-southern_english_female-low/en_GB-southern_english_female-low.with_runtime_opt.ort";
+                            "/en_GB/vits-piper-en_GB-southern_english_female-low/en_GB-southern_english_female-low.with_runtime_opt.ort";
     std::string tokensPath = std::string(nativeDataDirectoryPath) +
-            "/en_GB/vits-piper-en_GB-southern_english_female-low/tokens.txt";
+                             "/en_GB/vits-piper-en_GB-southern_english_female-low/tokens.txt";
     std::string dataPath = std::string(nativeDataDirectoryPath) +
-            "/en_GB/vits-piper-en_GB-southern_english_female-low/espeak-ng-data";
-    auto loadModelResult = SwitchboardV3::callAction("ttsNode", "loadModel",
-                                                     {{ "modelPath", modelPath },
-                                                      { "tokensPath", tokensPath }, { "dataPath", dataPath }});
+                           "/en_GB/vits-piper-en_GB-southern_english_female-low/espeak-ng-data";
+    auto loadModelResult = Switchboard::callAction("ttsNode", "loadModel",
+                                                   {{ "modelPath", modelPath },
+                                                    { "tokensPath", tokensPath }, { "dataPath", dataPath }});
 
     std::string whisperModelPath = std::string(nativeDataDirectoryPath) +
                                    "/ggml-tiny.en.bin";
-    auto result1 = SwitchboardV3::callAction("sttNode", "loadModel",
-                                             {{ "modelPath", whisperModelPath }, { "useGPU", true }});
+    auto result1 = Switchboard::callAction("sttNode", "loadModel",
+                                           {{ "modelPath", whisperModelPath }, { "useGPU", true }});
 
-    std::string sileroModelPath = std::string(nativeDataDirectoryPath) +
-                                  "/silero_vad.onnx";
-    auto result2 = SwitchboardV3::callAction("vadNode", "loadModel",
-                                             {{ "modelPath", sileroModelPath }});
-
-    SwitchboardV3::addEventListener("vadNode", "start", [](const std::any& data) {
+    Switchboard::addEventListener("vadNode", "speechStarted", [](const Event& event) {
         __android_log_print(ANDROID_LOG_INFO, "WhisperSTTtoSherpaTTSExample", "vadNode start");
     });
-    SwitchboardV3::addEventListener("vadNode", "end", [](const std::any& data) {
+    Switchboard::addEventListener("vadNode", "speechEnded", [](const Event& event) {
         __android_log_print(ANDROID_LOG_INFO, "WhisperSTTtoSherpaTTSExample", "vadNode end");
     });
 
@@ -86,7 +82,7 @@ Java_com_synervoz_switchboardandroiddemo_ui_examples_whisperstttosherpatts_Whisp
         JNIEnv *env,
         jobject instance) {
 
-    auto startEngineResult = SwitchboardV3::callAction(engineID, "start");
+    auto startEngineResult = Switchboard::callAction(engineID, "start");
     if (startEngineResult.isError()) {
         return false;
     }
@@ -97,7 +93,7 @@ extern "C" JNIEXPORT jboolean JNICALL
 Java_com_synervoz_switchboardandroiddemo_ui_examples_whisperstttosherpatts_WhisperSTTtoSherpaTTSExample_stopEngine(
         JNIEnv *env,
         jobject instance) {
-    auto stopEngineResult = SwitchboardV3::callAction(engineID, "stop");
+    auto stopEngineResult = Switchboard::callAction(engineID, "stop");
     if (stopEngineResult.isError()) {
         return true;
     }
