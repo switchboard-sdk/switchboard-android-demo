@@ -33,7 +33,6 @@ class SherpaTTSExample(context: Context) {
 
         val configJson = context.assets.open("TTSExample.json").readBytes().decodeToString()
 
-        // Create the engine
         val result = Switchboard.createEngine(configJson)
         if (result.isError) {
             Log.e("SherpaTTSExample", "Failed to create engine")
@@ -42,7 +41,6 @@ class SherpaTTSExample(context: Context) {
 
         engineId = result.value
 
-        // Load Sherpa TTS model
         val modelPath = "$dataDirectoryPath/en_GB/vits-piper-en_GB-southern_english_female-low/en_GB-southern_english_female-low.with_runtime_opt.ort"
         val tokensPath = "$dataDirectoryPath/en_GB/vits-piper-en_GB-southern_english_female-low/tokens.txt"
         val dataPath = "$dataDirectoryPath/en_GB/vits-piper-en_GB-southern_english_female-low/espeak-ng-data"
