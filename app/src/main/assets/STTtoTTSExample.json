@@ -21,11 +21,7 @@
                 },
                 {
                     "id": "sttNode",
-                    "type": "Whisper.STT",
-                    "config": {
-                        "initializeModel": true,
-                        "useGPU": true
-                    }
+                    "type": "Whisper.STT"
                 },
                 {
                     "id": "ttsNode",

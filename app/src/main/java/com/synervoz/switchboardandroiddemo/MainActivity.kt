@@ -12,13 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.synervoz.switchboard.sdk.SwitchboardSDK
-import com.synervoz.switchboardsherpa.SherpaExtension
 import com.synervoz.switchboardandroiddemo.ui.examples.sherpatts.SherpaTTSFragment
 import com.synervoz.switchboardandroiddemo.ui.examples.whisperstt.WhisperSTTFragment
 import com.synervoz.switchboardandroiddemo.ui.examples.whisperstttosherpatts.WhisperSTTtoSherpaTTSFragment
-import com.synervoz.switchboardsilerovad.SileroVADExtension
-import com.synervoz.switchboardwhisper.WhisperExtension
 import androidx.core.view.isVisible
 
 class MainActivity : AppCompatActivity() {
@@ -44,14 +40,6 @@ class MainActivity : AppCompatActivity() {
         button3.setOnClickListener {
             openFragment(WhisperSTTtoSherpaTTSFragment())
         }
-
-        System.loadLibrary("SwitchboardAndroidDemo")
-
-        // Please get your own  appID and appSecret from https://console.switchboard.audio/register
-        SwitchboardSDK.initialize(this, "demo", "demo")
-        SileroVADExtension.load()
-        WhisperExtension.load()
-        SherpaExtension.load()
 
         AssetUtils.copyAssetDirectoryToInternal(this, "model", "")
         AssetUtils.copyAssetFileToInternal(this, "TTSExample.json", "TTSExample.json")
