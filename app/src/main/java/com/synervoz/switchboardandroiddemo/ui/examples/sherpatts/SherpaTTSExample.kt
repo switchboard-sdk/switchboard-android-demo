@@ -1,13 +1,11 @@
 package com.synervoz.switchboardandroiddemo.ui.examples.sherpatts
 
 import android.content.Context
-import android.util.Log
 import com.synervoz.switchboard.sdk.Switchboard
 import com.synervoz.switchboardsherpa.SherpaExtension
 
-class SherpaTTSExample(context: Context) {
+class SherpaTTSExample(private val context: Context) {
     private var engineId: String? = null
-    private val dataDirectoryPath: String = context.filesDir.absolutePath
 
     init {
         createEngine(context)
@@ -27,25 +25,24 @@ class SherpaTTSExample(context: Context) {
         )
 
         if (initResult.isError) {
-            Log.e("SherpaTTSExample", "Failed to initialize Switchboard SDK")
-            return
+            throw RuntimeException("Failed to initialize Switchboard SDK")
         }
 
         val configJson = context.assets.open("TTSExample.json").readBytes().decodeToString()
 
         val result = Switchboard.createEngine(configJson)
         if (result.isError) {
-            Log.e("SherpaTTSExample", "Failed to create engine")
-            return
+            throw RuntimeException("Failed to create engine")
         }
 
         engineId = result.value
 
+        val dataDirectoryPath = context.filesDir.absolutePath
         val modelPath = "$dataDirectoryPath/en_GB/vits-piper-en_GB-southern_english_female-low/en_GB-southern_english_female-low.with_runtime_opt.ort"
         val tokensPath = "$dataDirectoryPath/en_GB/vits-piper-en_GB-southern_english_female-low/tokens.txt"
         val dataPath = "$dataDirectoryPath/en_GB/vits-piper-en_GB-southern_english_female-low/espeak-ng-data"
 
-        Switchboard.callAction(
+        val loadModelResult = Switchboard.callAction(
             objectId = "sherpaTTSNode",
             actionName = "loadModel",
             params = mapOf(
@@ -54,13 +51,18 @@ class SherpaTTSExample(context: Context) {
                 "dataPath" to dataPath
             )
         )
+
+        if (loadModelResult.isError) {
+            throw RuntimeException("Failed to load model: ${loadModelResult.error}")
+        }
     }
 
-    private fun start() {
+    fun start() {
         val engineId = this.engineId ?: return
+
         val startResult = Switchboard.callAction(engineId, "start")
         if (startResult.isError) {
-            Log.e("SherpaTTSExample", "Failed to start engine")
+            throw RuntimeException("Failed to start engine")
         }
     }
 
