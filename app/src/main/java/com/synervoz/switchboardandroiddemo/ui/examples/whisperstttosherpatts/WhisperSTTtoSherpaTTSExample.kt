@@ -3,9 +3,6 @@ package com.synervoz.switchboardandroiddemo.ui.examples.whisperstttosherpatts
 import android.content.Context
 import com.synervoz.switchboard.sdk.Switchboard
 import com.synervoz.switchboardandroiddemo.AssetUtils
-import com.synervoz.switchboardsherpa.SherpaExtension
-import com.synervoz.switchboardsilerovad.SileroVADExtension
-import com.synervoz.switchboardwhisper.WhisperExtension
 
 class WhisperSTTtoSherpaTTSExample(private val context: Context) {
     private var engineId: String? = null
@@ -20,25 +17,6 @@ class WhisperSTTtoSherpaTTSExample(private val context: Context) {
     }
 
     private fun createEngine(context: Context) {
-        WhisperExtension.load()
-        SileroVADExtension.load()
-        SherpaExtension.load()
-
-        val initResult = Switchboard.initialize(
-            context = context,
-            appId = "demo",
-            appSecret = "demo",
-            extensions = mapOf(
-                "Whisper" to emptyMap<String, Any>(),
-                "SileroVAD" to emptyMap<String, Any>(),
-                "Sherpa" to emptyMap<String, Any>()
-            )
-        )
-
-        if (initResult.isError) {
-            throw RuntimeException("Failed to initialize Switchboard SDK")
-        }
-
         val configJson = context.filesDir.resolve("STTtoTTSExample.json").readText()
 
         val result = Switchboard.createEngine(configJson)

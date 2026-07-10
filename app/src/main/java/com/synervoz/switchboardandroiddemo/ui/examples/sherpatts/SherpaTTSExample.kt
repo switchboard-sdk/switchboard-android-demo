@@ -2,7 +2,6 @@ package com.synervoz.switchboardandroiddemo.ui.examples.sherpatts
 
 import android.content.Context
 import com.synervoz.switchboard.sdk.Switchboard
-import com.synervoz.switchboardsherpa.SherpaExtension
 
 class SherpaTTSExample(private val context: Context) {
     private var engineId: String? = null
@@ -13,21 +12,6 @@ class SherpaTTSExample(private val context: Context) {
     }
 
     private fun createEngine(context: Context) {
-        SherpaExtension.load()
-
-        val initResult = Switchboard.initialize(
-            context = context,
-            appId = "demo",
-            appSecret = "demo",
-            extensions = mapOf(
-                "Sherpa" to emptyMap<String, Any>()
-            )
-        )
-
-        if (initResult.isError) {
-            throw RuntimeException("Failed to initialize Switchboard SDK")
-        }
-
         val configJson = context.assets.open("TTSExample.json").readBytes().decodeToString()
 
         val result = Switchboard.createEngine(configJson)
