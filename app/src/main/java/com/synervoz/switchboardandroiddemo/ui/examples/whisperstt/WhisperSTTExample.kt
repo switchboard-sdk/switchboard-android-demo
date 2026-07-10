@@ -2,9 +2,7 @@ package com.synervoz.switchboardandroiddemo.ui.examples.whisperstt
 
 import android.content.Context
 import com.synervoz.switchboard.sdk.Switchboard
-import com.synervoz.switchboardsilerovad.SileroVADExtension
 import com.synervoz.switchboardwhisper.TranscriptionInterface
-import com.synervoz.switchboardwhisper.WhisperExtension
 
 class WhisperSTTExample(private val context: Context) {
     var onTranscriptionUpdate: TranscriptionInterface? = null
@@ -20,23 +18,6 @@ class WhisperSTTExample(private val context: Context) {
     }
 
     private fun createEngine(context: Context) {
-        WhisperExtension.load()
-        SileroVADExtension.load()
-
-        val initResult = Switchboard.initialize(
-            context = context,
-            appId = "demo",
-            appSecret = "demo",
-            extensions = mapOf(
-                "Whisper" to emptyMap<String, Any>(),
-                "SileroVAD" to emptyMap<String, Any>()
-            )
-        )
-
-        if (initResult.isError) {
-            throw RuntimeException( "Failed to initialize Switchboard SDK")
-        }
-
         val configJson = context.assets.open("STTExample.json").readBytes().decodeToString()
 
         val result = Switchboard.createEngine(configJson)
