@@ -2,7 +2,7 @@
 
 A simple speech-to-text and text-to-speech demo application for Android.
 
-The app targets **SwitchboardSDK 3.2.4**, uses the **v3 JSON audio-graph API**, and is
+The app targets **SwitchboardSDK 3.2.5**, uses the **v3 JSON audio-graph API**, and is
 built with **Jetpack Compose** for the UI. It includes three examples:
 
 - **Sherpa TTS** — synthesize typed text to speech.
