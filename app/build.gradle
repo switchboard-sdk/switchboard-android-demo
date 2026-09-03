@@ -46,11 +46,11 @@ android {
 dependencies {
 
 //    Switchboard SDK and Extensions
-    implementation 'com.synervoz.switchboard:switchboardsdk:3.2.4'
-    implementation 'com.synervoz.switchboard.extensions:whisper:3.2.4'
-    implementation 'com.synervoz.switchboard.extensions:silerovad:3.2.4'
-    implementation 'com.synervoz.switchboard.extensions:onnx:3.2.4'
-    implementation 'com.synervoz.switchboard.extensions:sherpa:3.2.4'
+    implementation 'com.synervoz.switchboard:switchboardsdk:3.2.6'
+    implementation 'com.synervoz.switchboard.extensions:whisper:3.2.6'
+    implementation 'com.synervoz.switchboard.extensions:silerovad:3.2.6'
+    implementation 'com.synervoz.switchboard.extensions:onnx:3.2.6'
+    implementation 'com.synervoz.switchboard.extensions:sherpa:3.2.6'
 
 //    Switchboard SDK and Extensions from local AAR files
 //    implementation fileTree(dir: '../libs', include: ['*.aar'])
